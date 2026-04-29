@@ -1,5 +1,5 @@
 const API = (() => {
-  const baseUrl = "https://inventory-management-system-p17k.onrender.com"; // same origin when served by Flask
+  const baseUrl = ""; // same origin when served by Flask
 
   async function request(path, { method = "GET", body, headers } = {}) {
     const res = await fetch(baseUrl + path, {
