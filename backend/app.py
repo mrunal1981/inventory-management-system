@@ -6,8 +6,14 @@ from datetime import datetime
 from flask import Flask, jsonify, request, send_from_directory, session, Response
 from flask_cors import CORS
 
-from db import close_db, get_db, init_db
-from utils import as_float, as_int, hash_password, verify_password
+try:
+    # Works when loaded as package module (e.g., gunicorn "backend.app:create_app()")
+    from .db import close_db, get_db, init_db
+    from .utils import as_float, as_int, hash_password, verify_password
+except ImportError:
+    # Works when run directly: python backend/app.py
+    from db import close_db, get_db, init_db
+    from utils import as_float, as_int, hash_password, verify_password
 
 
 def create_app() -> Flask:
@@ -325,6 +331,3 @@ def create_app() -> Flask:
 if __name__ == "__main__":
     app = create_app()
     app.run(host="127.0.0.1", port=5000, debug=True)
-
-if __name__ == "__main__":
-    app.run()
