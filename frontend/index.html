@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Business Calculator &amp; Inventory Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  </head>
+  <body data-theme="login">
+    <div class="app is-locked" id="appRoot">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand__logo">SB</div>
+          <div class="brand__text">
+            <div class="brand__title">Smart Business</div>
+            <div class="brand__sub">Calculator &amp; Inventory</div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav__item is-active" data-view="dashboard">
+            <span class="nav__dot"></span> Dashboard
+          </button>
+          <button class="nav__item" data-view="calculator"><span class="nav__dot"></span> Calculator</button>
+          <button class="nav__item" data-view="inventory"><span class="nav__dot"></span> Inventory</button>
+          <button class="nav__item" data-view="expenses"><span class="nav__dot"></span> Expenses</button>
+        </nav>
+
+        <div class="sidebar__footer">
+          <div class="userline">
+            <div class="userline__meta">
+              <div class="userline__name" id="meName">Not signed in</div>
+              <div class="userline__hint">Default: admin / admin123</div>
+            </div>
+            <button class="btn btn--ghost" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button class="iconbtn" id="menuBtn" aria-label="Toggle menu">☰</button>
+          <div class="topbar__title" id="viewTitle">Dashboard</div>
+          <div class="topbar__actions">
+            <button class="btn btn--ghost" id="backupBtn">Backup to Local</button>
+            <button class="btn btn--ghost" id="restoreBtn">Restore from Local</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <!-- Login overlay (hidden after successful sign-in) -->
+          <div class="loginOverlay" id="loginOverlay">
+            <section class="panel loginCard" id="loginPanel">
+              <div class="loginCard__head">
+                <div class="loginCard__badge">SB</div>
+                <div>
+                  <div class="panel__title">Welcome back</div>
+                  <div class="note loginCard__sub">Sign in to manage inventory, expenses and calculators.</div>
+                </div>
+              </div>
+
+              <div class="grid grid--2">
+                <div class="field">
+                  <label>Username</label>
+                  <input id="loginUser" placeholder="admin" autocomplete="username" />
+                </div>
+                <div class="field">
+                  <label>Password</label>
+                  <input id="loginPass" type="password" placeholder="admin123" autocomplete="current-password" />
+                </div>
+              </div>
+
+              <div class="row row--end">
+                <button class="btn btn--primary" id="loginBtn">Sign in</button>
+              </div>
+              <div class="note" id="loginMsg"></div>
+            </section>
+          </div>
+
+          <!-- Dashboard -->
+          <section class="view" id="view-dashboard">
+            <div class="cards">
+              <div class="card">
+                <div class="card__label">Total Profit</div>
+                <div class="card__value" id="cardProfit">₹0</div>
+                <div class="card__hint">From Profit/Loss calculator inputs</div>
+              </div>
+              <div class="card">
+                <div class="card__label">Total Expenses</div>
+                <div class="card__value" id="cardExpenses">₹0</div>
+                <div class="card__hint">From expense tracker</div>
+              </div>
+              <div class="card">
+                <div class="card__label">Inventory Value</div>
+                <div class="card__value" id="cardInventory">₹0</div>
+                <div class="card__hint">Auto calculated from products</div>
+              </div>
+            </div>
+
+            <div class="grid grid--2">
+              <div class="panel">
+                <div class="panel__title">Expenses (Monthly)</div>
+                <canvas id="expensesChart" height="140"></canvas>
+              </div>
+              <div class="panel">
+                <div class="panel__title">Inventory (Top Items)</div>
+                <canvas id="inventoryChart" height="140"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <!-- Calculator -->
+          <section class="view is-hidden" id="view-calculator">
+            <div class="grid grid--2">
+              <div class="panel">
+                <div class="panel__title">Basic Calculator</div>
+                <div class="calc">
+                  <input id="calcDisplay" class="calc__display" placeholder="0" readonly />
+                  <div class="calc__grid" id="calcKeys"></div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__title">GST Calculator</div>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label>Amount</label>
+                    <input id="gstAmount" type="number" step="0.01" placeholder="1000" />
+                  </div>
+                  <div class="field">
+                    <label>GST %</label>
+                    <input id="gstPercent" type="number" step="0.01" placeholder="18" />
+                  </div>
+                </div>
+                <div class="row">
+                  <button class="btn btn--primary" id="gstBtn">Calculate</button>
+                  <div class="pill" id="gstOut">Total: ₹0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__title">Profit / Loss Calculator</div>
+              <div class="grid grid--3">
+                <div class="field">
+                  <label>Revenue</label>
+                  <input id="plRevenue" type="number" step="0.01" placeholder="50000" />
+                </div>
+                <div class="field">
+                  <label>Cost</label>
+                  <input id="plCost" type="number" step="0.01" placeholder="30000" />
+                </div>
+                <div class="field">
+                  <label>Other Expenses</label>
+                  <input id="plOther" type="number" step="0.01" placeholder="2000" />
+                </div>
+              </div>
+              <div class="row">
+                <button class="btn btn--primary" id="plBtn">Compute</button>
+                <div class="pill" id="plOut">Result: ₹0</div>
+              </div>
+              <div class="note">Profit is stored locally and shown on the dashboard card.</div>
+            </div>
+          </section>
+
+          <!-- Inventory -->
+          <section class="view is-hidden" id="view-inventory">
+            <div class="panel">
+              <div class="panel__title">Add Product</div>
+              <div class="grid grid--3">
+                <div class="field">
+                  <label>Name</label>
+                  <input id="pName" placeholder="Product name" />
+                </div>
+                <div class="field">
+                  <label>Quantity</label>
+                  <input id="pQty" type="number" step="1" placeholder="10" />
+                </div>
+                <div class="field">
+                  <label>Price</label>
+                  <input id="pPrice" type="number" step="0.01" placeholder="199.99" />
+                </div>
+              </div>
+              <div class="row">
+                <button class="btn btn--primary" id="addProductBtn">Add</button>
+                <div class="spacer"></div>
+                <div class="field field--inline">
+                  <label>Search</label>
+                  <input id="productSearch" placeholder="Search products..." />
+                </div>
+                <button class="btn btn--ghost" id="exportProductsBtn">Export CSV</button>
+              </div>
+              <div class="note" id="invMsg"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__title">Products</div>
+              <div class="tablewrap">
+                <table class="table" id="productsTable">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th class="num">Qty</th>
+                      <th class="num">Price</th>
+                      <th class="num">Value</th>
+                      <th class="actions">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Expenses -->
+          <section class="view is-hidden" id="view-expenses">
+            <div class="panel">
+              <div class="panel__title">Add Expense</div>
+              <div class="grid grid--4">
+                <div class="field">
+                  <label>Category</label>
+                  <input id="eCategory" placeholder="Rent, Salaries, Fuel..." />
+                </div>
+                <div class="field">
+                  <label>Amount</label>
+                  <input id="eAmount" type="number" step="0.01" placeholder="999.00" />
+                </div>
+                <div class="field">
+                  <label>Date</label>
+                  <input id="eDate" type="date" />
+                </div>
+                <div class="field">
+                  <label>Note (optional)</label>
+                  <input id="eNote" placeholder="Short note" />
+                </div>
+              </div>
+              <div class="row">
+                <button class="btn btn--primary" id="addExpenseBtn">Add</button>
+                <div class="spacer"></div>
+                <div class="field field--inline">
+                  <label>From</label>
+                  <input id="expStart" type="date" />
+                </div>
+                <div class="field field--inline">
+                  <label>To</label>
+                  <input id="expEnd" type="date" />
+                </div>
+                <button class="btn btn--ghost" id="filterExpensesBtn">Filter</button>
+                <button class="btn btn--ghost" id="exportExpensesBtn">Export CSV</button>
+              </div>
+              <div class="note" id="expMsg"></div>
+            </div>
+
+            <div class="grid grid--2">
+              <div class="panel">
+                <div class="panel__title">Total Expenses</div>
+                <div class="bigvalue" id="totalExpensesBig">₹0</div>
+                <div class="note">Filtered totals reflect selected date range.</div>
+              </div>
+              <div class="panel">
+                <div class="panel__title">Monthly Summary</div>
+                <div class="tablewrap">
+                  <table class="table" id="monthlyTable">
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+                        <th class="num">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__title">Expenses</div>
+              <div class="tablewrap">
+                <table class="table" id="expensesTable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th class="num">Amount</th>
+                      <th>Note</th>
+                      <th class="actions">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
+
